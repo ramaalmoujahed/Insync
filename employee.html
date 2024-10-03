@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+            
+        body {
+    font-family: "Quicksand", sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
+}
+.dashboard-overview {
+    display: grid;
+    grid-template-columns: 1fr; /* One column for small screens */
+    gap: 20px;
+}
+
+@media (min-width: 768px) {
+    .dashboard-overview {
+        grid-template-columns: repeat(2, 1fr); /* Two columns for larger screens */
+    }
+}
+
+/* Table Styling */
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    margin-top: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.dashboard-table th, .dashboard-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.dashboard-table th {
+    background-color: #1e3a8a;
+    color: #fff;
+}
+
+.dashboard-table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+.dashboard-table tbody tr:nth-child(even) {
+    background-color: #f1f5f9;
+}
+
+.dashboard-table tbody tr:hover {
+    background-color: #e2e6ea;
+}
+
+/* Conflict Reports Overview */
+.conflict-reports-overview {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.conflict-reports-overview h4 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.conflict-reports-overview p {
+    font-size: 16px;
+    color: #555;
+    margin: 10px 0;
+}
+
+/* Buttons */
+.dashboard-action-btn {
+    padding: 10px 15px;
+    background-color: #1e3a8a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.dashboard-action-btn:hover {
+    background-color: #3b82f6;
+}
+
+/* Conflict Trends and Department Performance (Smaller Chart) */
+.chart-container canvas {
+    width: 100%;  /* Make canvas take up full width of the container */
+    height: auto; /* Adjust height proportionally */
+    max-width: 600px; /* Optionally, you can limit the maximum width */
+    max-height: 400px; /* Optionally, limit the maximum height */
+}
+
+.chart-container {
+    width: 100%;
+    max-width: 600px; /* Set the maximum width of the container */
+    height: 400px;    /* Ensure the container has enough height */
+    margin: 0 auto;   /* Center the container if needed */
+}
+
+.sidebar {
+    width: 260px;
+    background: #597ea4;
+    color: #ffffff;
+    padding: 40px 25px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.sidebar h2 {
+    font-size: 26px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 35px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.sidebar a {
+    color: #c1c9d3;
+    text-decoration: none;
+    display: block;
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: background 0.3s, color 0.3s;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+    background-color: #1f2d40;
+    color: #ffffff;
+}
+
+/* Header Styling */
+.header-custom {
+    display: flex;
+    align-items: center;
+    background: #597ea4;
+    color: #fff;
+    padding: 10px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border: 2px solid #4a5b75;
+    position: fixed;
+    top: 0;
+    left: 260px;
+    width: calc(100% - 260px);
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    width: 80%;
+    align-items: center;
+}
+.header-custom h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.notification-btn-custom {
+    background-color: #fff;
+    color: #5b0808;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    margin-left: 10px; /* This pushes the notification button to the right */
+    transition: background 0.3s;
+}
+
+.notification-btn-custom:hover {
+    background-color: #e55757;
+}
+
+/* Main Content Styling */
+.main-content {
+    margin-left: 260px;
+    margin-top: 60px;
+    padding: 35px;
+    background-color: #ffffff;
+    flex: 1;
+    overflow-y: auto;
+    box-sizing: border-box;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    transition: margin-left 0.3s ease;
+}
+
+/* Avatar Section */
+.avatar-container-custom {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.user-avatar-custom {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 10px;
+    display: block;
+}
+
+.status-custom {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: #28a745;
+    border: 2px solid #fff;
+}
+
+/* Profile Styling */
+.profile-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #2e3b4e;
+}
+
+.profile-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+}
+
+.profile-picture {
+    text-align: center;
+}
+
+.profile-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 2px solid #ddd;
+}
+
+.profile-edit-btn {
+    background-color: #4a5b75;
+    color: #ffffff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 14px;
+}
+
+.profile-edit-btn:hover {
+    background-color: #3a4a64;
+}
+
+.profile-details {
+    flex: 1;
+}
+
+.profile-group {
+    margin-bottom: 20px;
+}
+
+.profile-section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e3a8a;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #e2e6ea;
+    padding-bottom: 5px;
+}
+
+.profile-group label {
+    font-weight: 500;
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.profile-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+    background-color: #ffffff;
+    transition: border-color 0.3s;
+}
+
+.profile-group input:focus {
+    border-color: #1e3a8a;
+    outline: none;
+}
+
+.profile-save-btn {
+    padding: 12px 20px;
+    background-color: #1e3a8a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 16px;
+    display: block;
+    width: 100%;
+}
+
+.profile-save-btn:hover {
+    background-color: #3b82f6;
+}
+
+/* Tabs and Content Styling */
+.tabs, .reports-tabs {
+    display: flex;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+    background: #f9f9f9;
+    border-radius: 5px 5px 0 0;
+    justify-content: center;
+}
+
+.tab, .reports-tab {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    cursor: pointer;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    transition: background 0.3s, color 0.3s;
+    font-size: 16px;
+    color: #333;
+}
+
+.tab.active, .reports-tab.active {
+    background: #1e3a8a;
+    color: white;
+    font-weight: bold;
+}
+
+.tab:hover, .reports-tab:hover {
+    background: #e2e6ea;
+}
+
+.tab-content, .report-tab-content {
+    background: white;
+    padding: 20px;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.tab-content.active, .report-tab-content.active {
+    display: block;
+}
+
+/* Calendar Styling */
+.calendar-container-custom {
+    width: 90%;
+    margin: auto;
+    overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    background: #fff;
+    max-width: 850px;
+}
+
+.calendar-header-custom {
+    text-align: center;
+    padding: 10px 0;
+    background: linear-gradient(to bottom, rgb(250, 251, 253) 0%, rgba(255, 255, 255, 0) 100%);
+    border-bottom: 1px solid rgba(166, 168, 179, 0.12);
+}
+
+.calendar-header-custom h1 {
+    margin: 0;
+    font-size: 14px;
+}
+
+.calendar-header-custom p {
+    margin: 2px 0 0 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(81, 86, 93, 0.4);
+}
+
+.calendar-header-custom button {
+    background: 0;
+    border: 0;
+    padding: 0;
+    color: rgba(81, 86, 93, 0.7);
+    cursor: pointer;
+    outline: 0;
+}
+
+.calendar-custom {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(7, minmax(60px, 1fr));
+    grid-template-rows: 30px;
+    grid-auto-rows: 60px;
+    overflow: auto;
+}
+
+.day-name-custom {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #99a1a7;
+    text-align: center;
+    border-bottom: 1px solid rgba(166, 168, 179, 0.12);
+    line-height: 30px;
+    font-weight: 500;
+}
+
+.day-custom {
+    border-bottom: 1px solid rgba(166, 168, 179, 0.12);
+    border-right: 1px solid rgba(166, 168, 179, 0.12);
+    text-align: right;
+    padding: 8px 10px;
+    letter-spacing: 0.5px;
+    font-size: 10px;
+    color: #98a0a6;
+    position: relative;
+}
+
+.day-custom.day-disabled-custom {
+    color: rgba(152, 160, 166, 0.6);
+    background-color: #ffffff;
+}
+
+.task-custom {
+    border-left-width: 2px;
+    padding: 5px 8px;
+    margin: 5px;
+    border-left-style: solid;
+    font-size: 12px;
+}
+
+.task-warning-custom {
+    border-left-color: #fdb44d;
+    background: #fef0db;
+    color: #b57939;
+}
+
+.task-danger-custom {
+    border-left-color: #fa607e;
+    background: rgba(253, 197, 208, 0.7);
+    color: #ad3948;
+}
+
+.task-info-custom {
+    border-left-color: #4786ff;
+    background: rgba(218, 231, 255, 0.7);
+    color: #1c5dca;
+}
+
+.task-primary-custom {
+    background: #4786ff;
+    color: #fff;
+    box-shadow: 0 10px 14px rgba(71, 134, 255, 0.4);
+}
+
+.task-detail-custom {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 10px);
+    background: #fff;
+    border: 1px solid rgba(166, 168, 179, 0.2);
+    color: #000;
+    padding: 20px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    z-index: 2;
+}
+/* General Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    overflow: hidden;
+}
+
+/* Table Header Styling */
+table thead {
+    background-color: #1e3a8a; /* Dark blue for header */
+    color: white;
+}
+
+table th {
+    padding: 12px 15px;
+    font-weight: bold;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+}
+
+/* Table Row Styling */
+table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    color: #333;
+}
+
+/* Remove border from the last column */
+table th:last-child,
+table td:last-child {
+    border-right: none;
+}
+
+/* Zebra Striped Rows */
+table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f1f5f9;
+}
+
+/* Hover Effect */
+table tbody tr:hover {
+    background-color: #e2e6ea;
+}
+
+/* Table Responsive Styling for smaller screens */
+@media (max-width: 768px) {
+    table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    table thead {
+        display: block;
+    }
+
+    table tbody {
+        display: block;
+    }
+
+    table th, table td {
+        padding: 10px;
+    }
+}
+
+/* Styling for action buttons inside tables */
+table button {
+    padding: 8px 12px;
+    background-color: #1e3a8a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+table button:hover {
+    background-color: #3b82f6;
+}
+/* Report Tab Section */
+.reports-tabs {
+    display: flex;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+    background: #f9f9f9;
+    border-radius: 5px 5px 0 0;
+    justify-content: center;
+}
+
+.reports-tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    cursor: pointer;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    transition: background 0.3s, color 0.3s;
+    font-size: 16px;
+    color: #333;
+}
+
+.reports-tab.active {
+    background: #1e3a8a;
+    color: white;
+    font-weight: bold;
+}
+
+.reports-tab:hover {
+    background: #e2e6ea;
+}
+
+/* Report Tab Content */
+.report-tab-content {
+    background: white;
+    padding: 20px;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.report-tab-content.active {
+    display: block;
+}
+
+/* Report Form Styling */
+form {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+    background-color: #ffffff;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #1e3a8a;
+    outline: none;
+}
+
+.report-submit-btn {
+    padding: 12px 20px;
+    background-color: #1e3a8a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 16px;
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.report-submit-btn:hover {
+    background-color: #3b82f6;
+}
+
+/* Report History Table Styling */
+.report-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.report-history-table th,
+.report-history-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+}
+
+.report-history-table th {
+    background-color: #1e3a8a;
+    color: white;
+    font-weight: bold;
+}
+
+.report-history-table tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* Add some space around the "Download" links */
+.report-history-table a {
+    text-decoration: none;
+    color: #1e3a8a;
+    font-weight: bold;
+}
+
+.report-history-table a:hover {
+    text-decoration: underline;
+}
+.company-logo {
+    height: 50px; /* Adjust the height as per your design */
+    margin-left: 15px; /* Some padding on the left */
+}
+
+    </style>
+</head>
+
+<body>
+    <header class="header-custom">
+        <div class="header-content">
+          
+            <img src="logo.png" alt="Company Logo" class="company-logo"> 
+            <button class="notification-btn-custom">
+                🔔
+            </button>
+        </div>
+    </header>
+    
+    <div class="sidebar">
+        <h2>Ali Khaled</h2>
+        <div class="avatar-container-custom">
+            <div class="avatar-custom">
+                <img src="10.jpg" alt="User Avatar" class="user-avatar-custom">
+                <span class="status-custom active"></span>
+            </div>
+        </div>
+        <a href="#dashboard" class="tab-link active" onclick="showTab(event, 'dashboard')">Dashboard</a>
+        <a href="#reports" class="tab-link" onclick="showTab(event, 'reports')">Reports</a>
+        <a href="#schedual" class="tab-link" onclick="showTab(event, 'schedual')">Schedule</a>
+        <a href="#profile" class="tab-link" onclick="showTab(event, 'profile')">Profile</a>
+        <a href="#settings" class="tab-link" onclick="showTab(event, 'settings')">Settings</a>
+        <a href="#contact" class="tab-link" onclick="showTab(event, 'contact')">Contact Us</a>
+    </div>
+
+ 
+    <div class="main-content">
+     
+        <div class="tab-content active" id="dashboard">
+            <h3 class="dashboard-title">Dashboard</h3>
+            <div class="dashboard-overview">
+                <div class="conflict-reports-overview">
+                    <h4>Conflict Reports Overview</h4>
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Total Conflicts</th>
+                                <th>Resolved</th>
+                                <th>Pending</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>September</td>
+                                <td>30</td>
+                                <td>12</td>
+                                <td>18</td>
+                            </tr>
+                            <tr>
+                                <td>August</td>
+                                <td>25</td>
+                                <td>15</td>
+                                <td>10</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="chart-container">
+                    <h4>Conflict Trends by Department</h4>
+                    <canvas id="conflictTrendsChart"></canvas>
+                </div>
+                <!-- Pending Resolutions (Table) -->
+                <div class="dashboard-widget">
+                    <h4>Pending Resolutions</h4>
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Conflict Type</th>
+                                <th>Departments Involved</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Rush Order Challenges</td>
+                                <td>Marketing, Production</td>
+                                <td>Pending Review</td>
+                            </tr>
+                            <tr>
+                                <td>Budget Shortfalls</td>
+                                <td>Finance, All Departments</td>
+                                <td>Awaiting Finance Response</td>
+                            </tr>
+                            <tr>
+                                <td>IT System Downtime</td>
+                                <td>IT, All Departments</td>
+                                <td>Resolution in Progress</td>
+                            </tr>
+                            <tr>
+                                <td>Maintenance Scheduling Conflicts</td>
+                                <td>Maintenance, Production</td>
+                                <td>Pending Approval</td>
+                            </tr>
+                            <tr>
+                                <td>Quality Control Delays</td>
+                                <td>Quality, Production</td>
+                                <td>Delayed</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Department Performance</h4>
+                    <canvas id="departmentPerformanceChart"></canvas>
+                </div>
+                <!-- Notifications and Alerts (Table) -->
+                <div class="dashboard-widget">
+                    <h4>Notifications & Alerts</h4>
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Alert Type</th>
+                                <th>Details</th>
+                                <th>Action Required</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Urgent</td>
+                                <td>Budget conflict between Finance and Marketing unresolved for 10 days.</td>
+                                <td>Review Budget Allocation</td>
+                            </tr>
+                            <tr>
+                                <td>Notice</td>
+                                <td>Timeline adjustment conflict has been resolved.</td>
+                                <td>Confirm Resolution</td>
+                            </tr>
+                            <tr>
+                                <td>Warning</td>
+                                <td>Production and Packaging misalignment causing delays.</td>
+                                <td>Coordinate with Production</td>
+                            </tr>
+                            <tr>
+                                <td>Alert</td>
+                                <td>Overlapping project timelines affecting resource allocation.</td>
+                                <td>Adjust Schedules</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-content" id="reports">
+            <h3 class="reports-title">Reports</h3>
+            <div class="reports-tabs">
+                <div class="reports-tab" onclick="showReportTab(event, 'report-form')">Report</div>
+                <div class="reports-tab" onclick="showReportTab(event, 'report-history')">History</div>
+            </div>
+
+            <div class="report-tab-content" id="report-form">
+                <h4 class="profile-section-title">Generate a New Report</h4>
+                <form>
+                    <div class="form-group">
+                        <label for="report-type">Department Involved</label>
+                        <select id="report-type" required>
+                            <option value="marketing">Marketing</option>
+                            <option value="finance">Finance</option>
+                            <option value="hr">Human Resources</option>
+                            <option value="sales">Sales</option>
+                            <!-- More options... -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority-level">Priority Level</label>
+                        <select id="priority-level" required>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="conflict-type">Conflict Type</label>
+                        <textarea id="conflict-type" rows="3" placeholder="Conflict type..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" rows="3" placeholder="Detailed description..."></textarea>
+                    </div>
+                    <button class="report-submit-btn">Generate Report</button>
+                </form>
+            </div>
+
+            <div class="report-tab-content" id="report-history" style="display: none;">
+                <h4 class="profile-section-title">Report History</h4>
+                <table class="report-history-table">
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Conflict Type</th>
+                            <th>Date Generated</th>
+                            <th>Date Closed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RPT-001</td>
+                            <td>Performance Report</td>
+                            <td>2024-09-01</td>
+                            <td><a href="#">Download</a></td>
+                        </tr>
+                        <tr>
+                            <td>RPT-002</td>
+                            <td>Attendance Report</td>
+                            <td>2024-08-25</td>
+                            <td><a href="#">Download</a></td>
+                        </tr>
+                        <tr>
+                            <td>RPT-003</td>
+                            <td>Financial Report</td>
+                            <td>2024-08-18</td>
+                            <td><a href="#">Download</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <div class="tab-content" id="schedual">
+            <h3 class="schedual-title-custom">Schedule</h3>
+            <div class="schedual-table-container-custom">
+                <table class="schedual-table-custom" id="schedualTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Meeting Title</th>
+                            <th>Participant(s)</th>
+                            <th>Role</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="schedual-employees">
+                            <td>9:00 AM</td>
+                            <td>Project Kickoff</td>
+                            <td>John Doe, Jane Smith</td>
+                            <td>Employee</td>
+                            <td>Conference Room A</td>
+                            <td>Scheduled</td>
+                            <td><button class="action-btn-custom">Reschedule</button></td>
+                        </tr>
+                        <tr class="schedual-supervisors">
+                            <td>10:30 AM</td>
+                            <td>Team Review</td>
+                            <td>Michael Brown</td>
+                            <td>Employee</td>
+                            <td>Meeting Room 2</td>
+                            <td>In Progress</td>
+                            <td>.....</td>
+                        </tr>
+                        <tr class="schedual-manager">
+                            <td>1:00 PM</td>
+                            <td>Outcome Report</td>
+                            <td>Sarah Williams</td>
+                            <td>Manager</td>
+                            <td>Executive Office</td>
+                            <td>Pending</td>
+                            <td>.....</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="calendar-container-custom">
+                <div class="calendar-header-custom">
+                    <h1>November</h1>
+                    <button>▾</button>
+                    <p>2023</p>
+                </div>
+                <div class="calendar-custom">
+                    <span class="day-name-custom">Mon</span>
+                    <span class="day-name-custom">Tue</span>
+                    <span class="day-name-custom">Wed</span>
+                    <span class="day-name-custom">Thu</span>
+                    <span class="day-name-custom">Fri</span>
+                    <span class="day-name-custom">Sat</span>
+                    <span class="day-name-custom">Sun</span>
+
+                    <div class="day-custom day-disabled-custom">30</div>
+                    <div class="day-custom day-disabled-custom">31</div>
+                    <div class="day-custom">1</div>
+                    <div class="day-custom">2</div>
+                    <div class="day-custom">3</div>
+                    <div class="day-custom">4</div>
+                    <div class="day-custom">5</div>
+                    <div class="day-custom">6</div>
+                    <div class="day-custom">7</div>
+                    <div class="day-custom">8</div>
+                    <div class="day-custom">9</div>
+                    <div class="day-custom">10</div>
+                    <div class="day-custom">11</div>
+                    <div class="day-custom">12</div>
+                    <div class="day-custom">13</div>
+                    <div class="day-custom">14</div>
+                    <div class="day-custom">15</div>
+                    <div class="day-custom">16</div>
+                    <div class="day-custom">17</div>
+                    <div class="day-custom">18</div>
+                    <div class="day-custom">19</div>
+                    <div class="day-custom">20</div>
+                    <div class="day-custom">21</div>
+                    <div class="day-custom">22</div>
+                    <div class="day-custom">23</div>
+                    <div class="day-custom">24</div>
+                    <div class="day-custom">25</div>
+                    <div class="day-custom">26</div>
+                    <div class="day-custom">27</div>
+                    <div class="day-custom">28</div>
+                    <div class="day-custom">29</div>
+                    <div class="day-custom">30</div>
+                    <div class="day-custom">1</div>
+                    <div class="day-custom">2</div>
+
+                    <section class="task-custom task-warning-custom">Meeting R103</section>
+                    <section class="task-custom task-danger-custom">Meeting R107</section>
+                    <section class="task-custom task-primary-custom">OFF-WORK</section>
+                    <section class="task-custom task-info-custom">Meeting R108</section>
+                </div>
+            </div>
+        </div>
+        <div class="tab-content" id="profile">
+            <h3 class="profile-title">Your Profile</h3>
+            <div class="profile-container">
+                <div class="profile-picture">
+                    <img src="10.jpg" alt="Profile Picture" class="profile-img">
+                    <button class="profile-edit-btn">Change Photo</button>
+                </div>
+                <div class="profile-details">
+                    <h4 class="profile-section-title">Personal Information</h4>
+                    <div class="form-group profile-group">
+                        <label for="profile-name">user name</label>
+                        <input type="text" id="profile-name" placeholder="Enter your full name" value="ali_khaled">
+                    </div>
+                    <div class="form-group profile-group">
+                        <label for="profile-id">Employee ID</label>
+                        <input type="text" id="profile-id" placeholder="Enter your employee ID" value="E1212">
+                    </div>
+                    <div class="form-group profile-group">
+                        <label for="profile-role">Role</label>
+                        <input type="text" id="profile-role" placeholder="Enter your role" value="Employee">
+                    </div>
+                    <div class="form-group profile-group">
+                        <label for="profile-phone">Phone Number</label>
+                        <input type="tel" id="profile-phone" placeholder="Enter your phone number" value="+1 (555) 123-4567">
+                    </div>
+
+                    <h4 class="profile-section-title">Company Information</h4>
+                    <div class="form-group profile-group">
+                        <label for="company-domain">Company Domain</label>
+                        <input type="text" id="company-domain" placeholder="Enter company domain" value="company.com">
+                    </div>
+                    <div class="form-group profile-group">
+                        <label for="company-address">Company Address</label>
+                        <input type="text" id="company-address" placeholder="Enter company address" value="1234 Elm Street, New York, NY">
+                    </div>
+                    <div class="form-group profile-group">
+                        <label for="company-zip">Zip Code</label>
+                        <input type="text" id="company-zip" placeholder="Enter company zip code" value="10001">
+                    </div>
+                    <div class="form-group profile-group">
+                        <label for="company-url">Company Website URL</label>
+                        <input type="url" id="company-url" placeholder="Enter company website URL" value="https://www.company.com">
+                    </div>
+                    <div class="form-group profile-group">
+                        <label for="company-industry">Industry</label>
+                        <input type="text" id="company-industry" placeholder="Enter company industry" value="Manufacturing">
+                    </div>
+                    <button class="profile-save-btn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="tab-content" id="settings">
+            <h3 class="settings-title">Settings</h3>
+            <div class="settings-container">
+                <h4 class="settings-section-title">Account Management</h4>
+                <div class="form-group settings-group">
+                    <label for="settings-username">Username</label>
+                    <input type="text" id="settings-username" placeholder="Enter your username" value="ali_khaled">
+                </div>
+                <div class="form-group settings-group">
+                    <label for="settings-email">Email Address</label>
+                    <input type="email" id="settings-email" placeholder="Enter your email" value="ali.khaled@company.com">
+                </div>
+                <div class="form-group settings-group">
+                    <label for="settings-language">Preferred Language</label>
+                    <select id="settings-language">
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                    </select>
+                </div>
+                <button class="settings-save-btn">Update Account</button>
+
+                <h4 class="settings-section-title">Security Settings</h4>
+                <div class="form-group settings-group">
+                    <label for="settings-password">Change Password</label>
+                    <input type="password" id="settings-password" placeholder="Enter new password">
+                </div>
+                <div class="form-group settings-group">
+                    <label for="settings-confirm-password">Confirm Password</label>
+                    <input type="password" id="settings-confirm-password" placeholder="Confirm new password">
+                </div>
+                <div class="form-group settings-group">
+                    <label for="settings-2fa">Two-Factor Authentication</label>
+                    <select id="settings-2fa">
+                        <option value="enabled">Enabled</option>
+                        <option value="disabled">Disabled</option>
+                    </select>
+                </div>
+                <button class="settings-save-btn">Update Security</button>
+
+                <h4 class="settings-section-title">Notification Preferences</h4>
+                <div class="form-group settings-group">
+                    <label for="settings-email-notifications">Email Notifications</label>
+                    <select id="settings-email-notifications">
+                        <option value="all">All Notifications</option>
+                        <option value="important">Only Important</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+                <div class="form-group settings-group">
+                    <label for="settings-sms-notifications">SMS Notifications</label>
+                    <select id="settings-sms-notifications">
+                        <option value="all">All Notifications</option>
+                        <option value="important">Only Important</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+                <button class="settings-save-btn">Update Notifications</button>
+
+                <h4 class="settings-section-title">Data Management</h4>
+                <div class="form-group settings-group">
+                    <label for="settings-data-export">Export Your Data</label>
+                    <button class="settings-export-btn">Download Data</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Us Content -->
+        <div class="tab-content" id="contact">
+            <div class="contact-us-container">
+                <div class="contact-us-card">
+                    <h3>Contact Us</h3>
+                    <div class="form-group">
+                        <label for="contact-name">Name</label>
+                        <input type="text" id="contact-name" placeholder="Write your name here..">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-email">Email</label>
+                        <input type="email" id="contact-email" placeholder="Let us know how to contact you back..">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-message">Message</label>
+                        <textarea id="contact-message" rows="4" placeholder="What would you like to tell us.."></textarea>
+                    </div>
+                    <button type="submit">Send Message</button>
+                    <div class="contact-details">
+                        <span>Phone: 001 1023 567</span>
+                        <span>Email: contact@company.com</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        // JavaScript for tab functionality
+        function showTab(event, tabId) {
+            event.preventDefault();
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(function (tab) {
+                tab.classList.remove('active');
+            });
+            // Remove active class from all links
+            document.querySelectorAll('.tab-link').forEach(function (link) {
+                link.classList.remove('active');
+            });
+            // Show the selected tab
+            document.getElementById(tabId).classList.add('active');
+            // Set the clicked link as active
+            event.currentTarget.classList.add('active');
+        }
+        function showReportTab(event, tabId) {
+    // Hide all sub-tab contents
+    document.querySelectorAll('.report-tab-content').forEach(function (tab) {
+        tab.style.display = 'none';
+    });
+    // Remove active class from all sub-tabs
+    document.querySelectorAll('.reports-tab').forEach(function (tab) {
+        tab.classList.remove('active');
+    });
+    // Show the selected sub-tab content
+    document.getElementById(tabId).style.display = 'block';
+    // Set the clicked sub-tab as active
+    event.currentTarget.classList.add('active');
+}
+function filterSchedual() {
+    const filter = document.getElementById('schedualFilter').value;
+    const rows = document.querySelectorAll('.schedual-table-custom tbody tr');
+    
+    rows.forEach(row => {
+        if (filter === 'all' || row.classList.contains(`schedual-${filter}`)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+    </script>
+   
+    <script>
+   window.onload = function() {
+    // Conflict Trends Chart
+    const ctx1 = document.getElementById('conflictTrendsChart').getContext('2d');
+    const conflictTrendsChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['HR', 'Finance', 'Production', 'IT', 'Maintenance', 'Quality'],
+            datasets: [{
+                label: 'Conflicts',
+                data: [5, 3, 4, 6, 2, 5],
+                backgroundColor: ['#1e3a8a', '#fa607e', '#28a745', '#4786ff', '#ffcc00', '#8a2be2']
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Department Performance Chart
+    const ctx2 = document.getElementById('departmentPerformanceChart').getContext('2d');
+    const departmentPerformanceChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ['January', 'February', 'March', 'April', 'May'],
+            datasets: [{
+                label: 'Resolved Conflicts',
+                data: [10, 15, 12, 8, 6],
+                borderColor: '#1e3a8a',
+                fill: false
+            }, {
+                label: 'Pending Conflicts',
+                data: [2, 3, 1, 4, 2],
+                borderColor: '#fa607e',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+};
+
+    
+      
+    </script>
+    
+
+</body>
+
+</html>
